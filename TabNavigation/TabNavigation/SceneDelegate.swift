@@ -2,7 +2,7 @@
 //  SceneDelegate.swift
 //  TabNavigation
 //
-//  Created by Akshit Goyal on 21/07/25.
+//  Created by Simran on 21/07/25.
 //
 
 import UIKit
