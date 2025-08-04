@@ -1,0 +1,204 @@
+//
+//  QuestionViewController.swift
+//  Personality Quiz
+//
+//  Created by Student on 31/07/25.
+//
+
+import UIKit
+
+class QuestionViewController: UIViewController {
+    
+    @IBOutlet weak var questionLabel: UILabel!
+    
+    
+    @IBOutlet weak var singleStackView: UIStackView!
+    @IBOutlet weak var singleButton1: UIButton!
+    @IBOutlet weak var singleButton2: UIButton!
+    @IBOutlet weak var singlebutton3: UIButton!
+    @IBOutlet weak var singlebutton4: UIButton!
+    
+    @IBOutlet weak var MultipleStackView: UIStackView!
+    @IBOutlet weak var multipleLabel1: UILabel!
+    @IBOutlet weak var multipleLabel2: UILabel!
+    @IBOutlet weak var multipleLabel3: UILabel!
+    @IBOutlet weak var multipleLabel4: UILabel!
+    
+    
+    @IBOutlet weak var multiSwitch1: UISwitch!
+    @IBOutlet weak var multiSwitch2: UISwitch!
+    @IBOutlet weak var multiSwitch3: UISwitch!
+    @IBOutlet weak var multiSwitch4: UISwitch!
+
+    
+    @IBOutlet weak var rangedStackView: UIStackView!
+    @IBOutlet weak var rangedLabel1: UILabel!
+    @IBOutlet weak var rangedLabel2: UILabel!
+    @IBOutlet weak var rangedSlider: UISlider!
+    
+    
+    @IBOutlet weak var questionProgressView: UIProgressView!
+    
+    
+    var questionIndex = 0
+    
+    var AnswerChosen: [Answer] = []
+    
+    var question: [Question] = [
+        Question(
+            text: "Which food do you like the most?",
+            type: .single,
+            answers: [
+                Answer(text: "Steak", type: .lion),
+                Answer(text: "Fish", type: .cat),
+                Answer(text: "Sweet", type: .panda),
+                Answer(text: "Protein", type: .bull)
+            ]),
+        Question(
+            text: "Which activities do you enjoy?",
+            type: .multiple,
+            answers: [
+                Answer(text: "Wrestling", type: .bull),
+                Answer(text: "Sleeping", type: .cat),
+                Answer(text: "Eating", type: .panda),
+                Answer(text: "Leadership", type: .lion)
+            ]),
+        Question(
+            text: "How much do you enjoy car rides?",
+            type: .ranged,
+            answers: [
+                Answer(text: "I dislike them", type: .cat),
+                Answer(text: "I get a little nervous ", type: .panda),
+                Answer(text: "I barely notice", type: .lion),
+                Answer(text: "I love them", type: .bull)
+            ])
+    ]
+    
+    var answersChosen: [Answer] = []
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        updateUI()
+    }
+    func updateUI() {
+        singleStackView.isHidden = true
+        MultipleStackView.isHidden = true
+        rangedStackView.isHidden = true
+        
+        let currentQuestion = question[questionIndex]
+        let currentAnswers = currentQuestion.answers
+        let totalProgress =  Float(questionIndex) / Float(question.count)
+        
+        navigationItem.title = "Question \(questionIndex + 1)"
+        questionLabel.text = currentQuestion.text
+        questionProgressView.setProgress(totalProgress, animated: true)
+        
+        
+        
+        
+        switch currentQuestion.type {
+        case .single:
+            updateSingleStack(using: currentAnswers)
+            
+        case .multiple:
+            updateMultipleStack(using: currentAnswers)
+            
+        case .ranged:
+            updateRangedStack(using: currentAnswers)
+        }
+    }
+    
+    func updateSingleStack(using answers: [Answer]) {
+        singleStackView.isHidden = false
+        singleButton1.setTitle(answers[0].text, for: .normal)
+        singleButton2.setTitle(answers[1].text, for: .normal)
+        singlebutton3.setTitle(answers[2].text, for: .normal)
+        singlebutton4.setTitle(answers[3].text, for: .normal)
+    }
+    
+    func updateMultipleStack(using answers: [Answer]) {
+        MultipleStackView.isHidden = false
+        multiSwitch1.isOn = false
+        multiSwitch2.isOn = false
+        multiSwitch3.isOn = false
+        multiSwitch4.isOn = false
+        
+        multipleLabel1.text = answers[0].text
+        multipleLabel2.text = answers[1].text
+        multipleLabel3.text = answers[2].text
+        multipleLabel4.text = answers[3].text
+    }
+    
+    func updateRangedStack(using answers: [Answer]) {
+        rangedStackView.isHidden = false
+        rangedSlider.setValue(0.5, animated: false)
+        rangedLabel1.text = answers.first?.text
+        rangedLabel2.text = answers.last?.text
+        
+        
+    }
+    @IBAction func singleAnswerButtonPressed(_ sender: UIButton) {
+        let currentAnswer = question[questionIndex].answers
+        
+        switch sender {
+            case singleButton1:
+            answersChosen.append(currentAnswer[0])
+        case singleButton2:
+            answersChosen.append(currentAnswer[1])
+        case singlebutton3:
+            answersChosen.append(currentAnswer[2])
+        case singlebutton4:
+            answersChosen.append(currentAnswer[3])
+        default:
+            break
+        }
+        nextQuestion()
+    }
+    
+    @IBAction func multipleAnswerButtonPressed() {
+        let currentAnswer = question[questionIndex].answers
+        
+        if multiSwitch1.isOn {
+            answersChosen.append(currentAnswer[0])
+        }
+        if multiSwitch2.isOn {
+            answersChosen.append(currentAnswer[1])
+        }
+        if multiSwitch3.isOn {
+            answersChosen.append(currentAnswer[2])
+        }
+        if multiSwitch4.isOn {
+            answersChosen.append(currentAnswer[3])
+        }
+        
+        nextQuestion()
+    }
+    
+    @IBAction func rangedAnswerButtonPressed() {
+        let currentAnswer = question[questionIndex].answers
+        
+        let index = Int(round(rangedSlider.value * Float(currentAnswer.count - 1)))
+        answersChosen.append(currentAnswer[index])
+        nextQuestion()
+    }
+    func nextQuestion() {
+        questionIndex += 1
+        
+        if questionIndex < question.count {
+            updateUI()
+        }else {
+            performSegue(withIdentifier: "Result", sender: nil)
+        }
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "Result" {
+            let resultVC = segue.destination as! ResultViewController
+            resultVC.responses = answersChosen
+        }
+    }
+}
+
+  
+
